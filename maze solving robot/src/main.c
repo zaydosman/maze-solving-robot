@@ -1,7 +1,7 @@
 //********************************************************************
 //*             EEE3099S Line Following Robot Code                   *
 //*==================================================================*
-//* WRITTEN BY: Mueez Allie & Stefan Dominicus 		                 *
+//* WRITTEN BY: Tonderai Said and Zayd Osman     	                 *
 //* DATE CREATED: 19 September 2018                                  *
 //* MODIFIED:                                                        *
 //*==================================================================*
@@ -58,6 +58,7 @@
     void set_start(void);     //sets data values for starting point
     void check_explored(void); //sets global array of available unexplored paths
     int check_paths(void);    //returns number of paths surrounding the current point - 1
+
 
 
  //Interrupt Handler Functions
@@ -117,6 +118,8 @@ void check_explored(){
 
 
 
+	//corresponds to compass directions, sets array accordingly
+
 }
 // Main function
 void main(void) {
@@ -132,6 +135,8 @@ void main(void) {
 
     //Loop forever
     for(;;);
+
+
 
 }
 
