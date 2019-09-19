@@ -72,6 +72,7 @@
     void move(void); // keep moving forward when on blacklike and no intersection is found
     void direction(void); // register direction when turning
     void init_Ports(void);
+    void setDirection(void);
 
 //Hardware interfacing functions-------------------------------------------------------------------------------------
 void init_Ports() {
@@ -338,7 +339,7 @@ void Go_Button_EXTI0_IRQHandler(void){
 
 }
 
-//assumes driving mode 2
+//Interrupt handler for sensor detection of new point
 void Sensor_EXTI_IRQHandler(void){
 
     EXTI->PR |= EXTI_PR_PR0;// removes interrupt pending state
