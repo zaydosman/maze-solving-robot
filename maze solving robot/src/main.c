@@ -194,6 +194,11 @@ void init_Timer() {
 
 }
 
+void setDirection() {
+	//Set both motors to forward
+	GPIOA->ODR &=~ (GPIO_ODR_10|GPIO_ODR_11) ;
+}
+
 void followLine() {
 
 	//center is on
