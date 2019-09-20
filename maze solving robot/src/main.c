@@ -50,10 +50,7 @@
 
 
 //Function Declarations
- //Initialisation functions
-    void initPorts(void);
-    void init_NVIC(void);
-    void init_EXTI(void);
+ //maze mapping functions
     void update_data(void);   //updates data arrays
     void calc_distance(void);	  //calculates distance traveled from previous point
     int sel_direction(void);  //selects direction to move next based on order of preference
@@ -62,7 +59,7 @@
     void set_start(void);     //sets data values for starting point
     void check_explored(void); //sets global array of available unexplored paths
     int check_paths(void);    //returns number of paths surrounding the current point - 1
-    int choose_direction(int);
+    int choose_direction(int); // returns direction in terms of absolute NWSE So if you want to turn left then it tells you left corresponds to either NSWE depending on the orientation of robot
     int check_newpoint(void); //returns 1 if the current point is new, 0 if it has been previously visited
 
  //Interrupt Handler Functions
@@ -70,9 +67,9 @@
     void Sensor_EXTI_IRQHandler(void); // choose ports numbers for 14 and 15
 
  //General robot functions
-    void stop(void); // code to make robot pause either at end of maze or at intersection for processing
-    void move(void); // keep moving forward when on blacklike and no intersection is found
-    void direction(void); // register direction when turning
+    void init_Timer(void);
+    void init_NVIC(void);
+    void init_EXTI(void);
     void init_Ports(void);
     void setDirection(void);
 
@@ -273,7 +270,7 @@ void check_explored(){
 
 }
 
-// returns direction in terms of absolute NWSE So if you want to turn left then it tells you left corresponds to either NSWE depending on the orientation of robot
+
 int choose_direction(int chosen_Direction){
 	int absolute[] ={1,2,3,4} ;//NSWE —FBLR
 	int relative[4][4] = {{1,2,3,4}, {3,4,2,1}, {2,1,4,3}, {4,3,1,2} };
@@ -347,10 +344,10 @@ void update_data(){
 
 	if(check_newpoint()==1){                  //new point
 
-		coordinate[0][total_points]=globalx;
-		coordinate[1][total_points]=globaly;
-		type[total_points]=check_paths();
-		explored[total_points]=1;
+		coordinate[0][total_points-1]=globalx;
+		coordinate[1][total_points-1]=globaly;
+		type[total_points-1]=check_paths();
+		explored[total_points-1]=1;
 		total_points++;
 
 	}else if(check_newpoint()==0){            //old point
