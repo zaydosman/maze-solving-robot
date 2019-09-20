@@ -39,6 +39,8 @@
     uint16_t STEP_DOWN_1 = 20;
     int total_points;
     int direction;				//stores direction that robot is facing 1234-->ENWS
+    double globalx;				//stores current x coordinate of robot
+    double globaly;				//stores current y coordinate of robot
     int time_distance;			//stores time based distance in x or y direction
     int coordinate[2][30];      //stores time based x and y co-ordinates of points
     int point[30];				//stores integer number that identifies point
@@ -53,15 +55,15 @@
     void init_NVIC(void);
     void init_EXTI(void);
     void update_data(void);   //updates data arrays
-    int calc_distance(int);	  //calculates distance traveled from previous point
+    void calc_distance(void);	  //calculates distance traveled from previous point
     int sel_direction(void);  //selects direction to move next based on order of preference
     void change_direction(int);//change direction based on input selected direction
     void follow_line(void);   //set motors to follow line in direction robot is facing
     void set_start(void);     //sets data values for starting point
     void check_explored(void); //sets global array of available unexplored paths
     int check_paths(void);    //returns number of paths surrounding the current point - 1
-
-
+    int choose_direction(int);
+    int check_newpoint(void); //returns 1 if the current point is new, 0 if it has been previously visited
 
  //Interrupt Handler Functions
     void Go_Button_EXTI0_1_IRQHandler(void);
@@ -104,7 +106,7 @@ void init_Ports() {
 }
 
 //attach edges to pushbutton(s) and configure external interrupt
-void init_EXTI(void){
+void init_EXTI(){
 
 
 
@@ -226,14 +228,13 @@ void set_start(void){
 	point[0]=0;
 	coordinate[0][0]=0;
 	coordinate[1][0]=0;
-	Type[0]=0;
-	explored[0]=check_paths();
+	Type[0]=check_paths();
+	explored[0]=0;
 	direction=2;
 	total_points=1;
 
 
 }
-
 
 int check_paths(){
 
@@ -275,7 +276,7 @@ void check_explored(){
 // returns direction in terms of absolute NWSE So if you want to turn left then it tells you left corresponds to either NSWE depending on the orientation of robot
 int choose_direction(int chosen_Direction){
 	int absolute[] ={1,2,3,4} ;//NSWE —FBLR
-	int relative[][] = [  [1,2,3,4], [3,4,2,1], [2,1,4,3], [4,3,1,2] ];
+	int relative[4][4] = {{1,2,3,4}, {3,4,2,1}, {2,1,4,3}, {4,3,1,2} };
 
 	//uses global index variable for axis
 
@@ -290,6 +291,41 @@ int choose_direction(int chosen_Direction){
 	*/
 }
 
+int check_newpoint(){
+
+	int check=1;
+
+	for(int i = 0; i<total_points-1; i++){
+
+		if(coordinate[0][i]==globalx && coordinate[1][i]==globaly){
+
+			check=0;
+
+		}
+
+	}
+
+	return check;
+
+}
+
+void update_data(){
+
+	if(check_newpoint()==1){
+
+		coordinate[0][total_points]=globalx;
+		coordinate[1][total_points]=globaly;
+		type[total_points]=check_paths();
+		explored[total_points]=1;
+		total_points++;
+
+	}else if(check_newpoint()==0){
+
+
+
+	}
+
+}
 //-----------------------------------------------------------------------------------------------------------
 
 // Main function
