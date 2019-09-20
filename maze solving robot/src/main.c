@@ -43,6 +43,7 @@
     double globaly;				//stores current y coordinate of robot
     int time_distance;			//stores time based distance in x or y direction
     int coordinate[2][30];      //stores time based x and y co-ordinates of points
+    int options[2][30];         //stores unexplored path options for each point
     int point[30];				//stores integer number that identifies point
     int type[30];				//stores the type of point, equal to number of paths leading to point -1
     int explored[30];           //stores the number of paths already explored leading to point
@@ -61,6 +62,8 @@
     int check_paths(void);    //returns number of paths surrounding the current point - 1
     int choose_direction(int); // returns direction in terms of absolute NWSE So if you want to turn left then it tells you left corresponds to either NSWE depending on the orientation of robot
     int check_newpoint(void); //returns 1 if the current point is new, 0 if it has been previously visited
+    int check_x_paths(void); //updates options array with unexplored x paths for new point
+    int check_y_paths(void); //updates options array with unexplored y paths for new point
 
  //Interrupt Handler Functions
     void Go_Button_EXTI0_1_IRQHandler(void);
@@ -244,6 +247,45 @@ int check_paths(){
 
 }
 
+int check_x_paths(){
+
+	int xpaths = 0;
+
+	if(wideLeftPin==1 && wideRightPin==0){
+
+		xpaths=-1;
+
+	}
+
+	else if(wideRightPin==1 && wideLeftPin==0){
+
+		xpaths=1;
+
+	}
+
+	else if(wideRightPin==1&&wideLeftPin==1){
+
+		xpaths=2;
+	}
+
+	return xpaths;
+
+}
+
+int check_y_paths(){
+
+	int ypaths=0;
+
+	if(lineCentrePin==1){
+
+		ypaths=1;
+
+	}
+
+	return ypaths;
+
+}
+
 void check_explored(){
 	//sets available paths
 	if (GPIO->IDR &right_wide){
@@ -346,8 +388,13 @@ void update_data(){
 
 		coordinate[0][total_points-1]=globalx;
 		coordinate[1][total_points-1]=globaly;
+
+		options[0][total_points-1]=check_x_paths;
+		options[1][total_points-1]=check_y_paths;
+
 		type[total_points-1]=check_paths();
 		explored[total_points-1]=1;
+
 		total_points++;
 
 	}else if(check_newpoint()==0){            //old point
@@ -364,7 +411,7 @@ void update_data(){
 
 		}
 
-		explored[i]=explored[i]+1;
+
 
 	}
 
