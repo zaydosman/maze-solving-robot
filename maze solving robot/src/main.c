@@ -309,9 +309,43 @@ int check_newpoint(){
 
 }
 
+void calc_distance(){
+
+	double NodeTime = 0; // retrieve time from last node from timer
+	int scaleFactor=5;
+
+	//code calculates new coordinate based on new node and previous node
+
+	switch(direction){
+
+		case 1:
+			globaly+=NodeTime*scaleFactor; //we have moved north so we increase y coordinate
+			break;
+
+
+		case 2:
+	 		globaly-=NodeTime*scaleFactor;
+			break;
+
+		case 3:
+			globalx-=NodeTime*scaleFactor;
+			break;
+
+		case 4:
+			globalx+=NodeTime*scaleFactor; //we have moved east so we increase x coordinate
+			break;
+
+	}
+
+
+
+}
+
 void update_data(){
 
-	if(check_newpoint()==1){
+	calc_distance();
+
+	if(check_newpoint()==1){                  //new point
 
 		coordinate[0][total_points]=globalx;
 		coordinate[1][total_points]=globaly;
@@ -319,13 +353,27 @@ void update_data(){
 		explored[total_points]=1;
 		total_points++;
 
-	}else if(check_newpoint()==0){
+	}else if(check_newpoint()==0){            //old point
 
+		int old_index=0;
 
+		for(int i = 0; i<total_points-1;i++){
+
+			if(coordinate[0][i]==globalx && coordinate[1][i]==globaly){
+
+				old_index=i;
+
+			}
+
+		}
+
+		explored[i]=explored[i]+1;
 
 	}
 
 }
+
+
 //-----------------------------------------------------------------------------------------------------------
 
 // Main function
@@ -347,8 +395,6 @@ void main(void) {
 
 }
 
-
-
 //Interrupt handler for go button which is connected to GPIO B
 
 void Go_Button_EXTI0_IRQHandler(void){
@@ -367,11 +413,14 @@ void Go_Button_EXTI0_IRQHandler(void){
     //Unmask interrupts for sensors
     EXTI->IMR |=EXT_IMR_MR4; //front sensor
     EXTI->IMR |=EXT_IMR_MR5;//centre sensor1
-    EXTI->IMR |=EXT_IMR_MR6;//centresensor 2
-    EXTI->IMR |=EXT_IMR_MR7;//left wide sensir
+    EXTI->IMR |=EXT_IMR_MR6;//centre sensor 2
+    EXTI->IMR |=EXT_IMR_MR7;//left wide sensor
     EXTI->IMR |=EXT_IMR_MR8;//right wide sensor
 
-    mode=1; // now ready to move
+    set_start();
+
+    follow_line();
+
 
 }
 
@@ -380,8 +429,16 @@ void Sensor_EXTI_IRQHandler(void){
 
     EXTI->PR |= EXTI_PR_PR0;// removes interrupt pending state
 
+    //stops robot
+    TIM3 -> CCR1 = 0;
+    TIM3 -> CCR2 = 0;
+    leftDuty = 0;
+    rightDuty = 0;
 
-
+    updateData();
+    select_direction();
+    change_direction();
+    follow_line();
 
 }
 
