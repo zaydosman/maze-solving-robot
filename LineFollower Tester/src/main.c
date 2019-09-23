@@ -71,11 +71,11 @@ void init_Ports() {
     	    	    	 GPIO_MODER_MODER7_1);
 
 
-    	//Set B13-B12 as outputs for motor direction control, B10-B11 for sensor status LEDs
+    	//Set B13-B12 as outputs for motor direction control, B2 and B11 for sensor status LEDs
     	GPIOB->MODER |= (GPIO_MODER_MODER13_0|
     	    	         GPIO_MODER_MODER12_0|
     	    			 GPIO_MODER_MODER11_0|
-    	    			 GPIO_MODER_MODER10_0);
+    	    			 GPIO_MODER_MODER2_0);
 
     	//set pull up resistor for go button
     	GPIOA->PUPDR |= 0b00100100000000000000000001000000;
@@ -180,24 +180,24 @@ void setStatusLED() {
 
 	if(GPIOB->IDR & GPIO_IDR_3){
 
-		GPIOB->ODR |= GPIO_ODR_10;
+		GPIOB->ODR |= GPIO_ODR_11;
 
 	}
 
 	else if(!(GPIOB->IDR & GPIO_IDR_3)){
 
-		GPIOB->ODR &=~GPIO_ODR_10;
+		GPIOB->ODR &=~GPIO_ODR_11;
 	}
 
 	if(GPIOB->IDR & GPIO_IDR_4){
 
-		GPIOB->ODR |= GPIO_ODR_11;
+		GPIOB->ODR |= GPIO_ODR_2;
 
 	}
 
 	else if(!(GPIOB->IDR & GPIO_IDR_4)){
 
-		GPIOB->ODR &=~GPIO_ODR_11;
+		GPIOB->ODR &=~GPIO_ODR_2;
 	}
 
 }
