@@ -1,0 +1,62 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww22820\viewh12340\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\
+/*\
+int getGlobalDirection()\{\
+\
+\
+	int absolute[] =\{1,2,3,4\} //NSWE \'97FBLR\
+	int relative[][] = [  [1,2,3,4], [3,4,2,1], [2,1,4,3], [4,3,1,2] ]\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6800\tx6803\pardirnatural\partightenfactor0
+\cf0 	//using global index variable\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 \
+\
+	Int dir=0;\
+	Int chosen = sel_direction();\
+	int temp= Array.index0f(relative[index], chosen)\
+	dir = absolute[temp];\
+	\
+\
+\
+\
+\}\
+*/\
+\
+\
+// returns direction in terms of absolute NWSE So if you want to turn left then it tells you left corresponds to either NSWE depending on the orientation of robot\
+\
+\
+int choose_direction(int chosen_Direction)\{\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 	int absolute[] =\{1,2,3,4\} //NSWE \'97FBLR\
+	int relative[][] = [  [1,2,3,4], [3,4,2,1], [2,1,4,3], [4,3,1,2] ]	\
+	\
+	//uses global index variable for axis\
+	\
+	int temp = Array.indexOf(relative[index],chosen_Direction); \
+	\
+	int absoluteChoice= absolute[temp];\
+\
+	return absoluteChoice; \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 	\
+	/*if chosen direction is indeed taken then index variable must me updated\
+	Increament for Right turn and Decrease for left turn\
+	*/\
+\}\
+\
+\
+\
+\
+\
+\
+}
