@@ -1,7 +1,7 @@
 //********************************************************************
-//*             EEE3099S Maze Robot Final Code                       *
+//*             EEE3099S Line Follower Tester Code                   *
 //*==================================================================*
-//* WRITTEN BY: Tonderai Saidi and Zayd Osman     	                 *
+//* WRITTEN BY: Tonderai Said and Zayd Osman     	                 *
 //* DATE CREATED: 19 September 2019                                  *
 //* MODIFIED:                                                        *
 //*==================================================================*
@@ -24,10 +24,11 @@
 
 #define Delay  1000000			     //Delay after the Go Button is released
 #define TurnDelay 1000000
-#define leftTurnDelay 1000000
+#define leftTurnDelay 10000000
 #define rightTurnDelay 10000000
 #define uTurnDelay 	   10000000
 #define circleDelay 1000000
+#define forwardDelay 250000
 
 
 //global variables
@@ -35,9 +36,10 @@
     uint16_t leftDuty;
     uint16_t rightDuty;
     uint16_t MAX_DUTY = 70;
-    uint16_t STEP_RIGHT_UP_1 = 80;
-    uint16_t STEP_LEFT_UP_1 = 90;
-    uint16_t STEP_DOWN_1 = 60;
+    uint16_t STEP_RIGHT_UP_1 = 70;
+    uint16_t STEP_LEFT_UP_1 = 98;
+    uint16_t STEP_RIGHT_DOWN_1 = 55;
+    uint16_t STEP_LEFT_DOWN_1 = 55;
     int goPressed=0;
     int detected=0;
     int deadEnd=0;
@@ -47,10 +49,24 @@
     int nextDirection=0;
     int totalturns=0;
     int map[30];
+    int optimisedMap[30];
+
+    //optimisation cases
+    int case1[]={3,4,1};
+    int case2[]={3,4,2};
+    int case3[]={3,4,3};
+    int case4[]={2,4,3};
+    int case5[]={2,4,2};
+    int case6[]={1,4,3};
+
+
 
 
 //Function Declarations
  //maze mapping functions
+
+
+
 
 
  //General robot functions
@@ -239,13 +255,13 @@ void followLine() {
 	//only left sensor on
 	if ((GPIOB->IDR & GPIO_IDR_3) && !(GPIOB->IDR & GPIO_IDR_4)) {
 
-		leftDuty = STEP_DOWN_1;
+		leftDuty = STEP_LEFT_DOWN_1;
 		rightDuty = STEP_RIGHT_UP_1;
 
 	//only right sensor on
 	} else if (!(GPIOB->IDR & GPIO_IDR_3) && (GPIOB->IDR & GPIO_IDR_4)){
 		leftDuty = STEP_LEFT_UP_1;
-		rightDuty = STEP_DOWN_1;
+		rightDuty = STEP_RIGHT_DOWN_1;
 	} else {
 		//both sensors on
 		leftDuty = MAX_DUTY;
@@ -258,24 +274,24 @@ void followLine() {
 
 void setStatusLED() {
 
-	if(GPIOB->IDR & GPIO_IDR_5){
+	if(GPIOB->IDR & GPIO_IDR_3){
 
 		GPIOB->ODR |= GPIO_ODR_11;
 
 	}
 
-	else if(!(GPIOB->IDR & GPIO_IDR_5)){
+	else if(!(GPIOB->IDR & GPIO_IDR_3)){
 
 		GPIOB->ODR &=~GPIO_ODR_11;
 	}
 
-	if(GPIOB->IDR & GPIO_IDR_6){
+	if(GPIOB->IDR & GPIO_IDR_4){
 
 		GPIOB->ODR |= GPIO_ODR_2;
 
 	}
 
-	else if(!(GPIOB->IDR & GPIO_IDR_6)){
+	else if(!(GPIOB->IDR & GPIO_IDR_4)){
 
 		GPIOB->ODR &=~GPIO_ODR_2;
 	}
@@ -288,6 +304,8 @@ void stop() {
 	TIM3 -> CCR2 = 0;
 	leftDuty = 0;
 	rightDuty = 0;
+
+
 }
 
 void detectLR(){
@@ -298,13 +316,14 @@ void detectLR(){
 			stop();
 			detected=1;
 			nextDirection=direction();
-
+			for (int delay = 0; delay <Delay; delay++);
 		}
 
-	//followLine();
-	//setDutyCycle();
-	//for (int delay = 0; delay <TurnDelay; delay++);
-	//stop();
+	rightDuty=60;
+	leftDuty=68;
+	setDutyCycle();
+	for (int delay = 0; delay <forwardDelay; delay++);
+	stop();
 	//detectCircle();
 	//changeDirection();
 
@@ -378,7 +397,6 @@ void turnLeft(){
 	rightDuty=50;
 	setDutyCycle();
 
-	for (int delay = 0; delay <leftTurnDelay; delay++);
 
 	if(GPIOB->IDR & GPIO_IDR_7){
 
@@ -403,7 +421,7 @@ void turnRight(){
 	rightDuty=50;
 	setDutyCycle();
 
-	for (int delay = 0; delay <rightTurnDelay; delay++);
+
 
 	if(GPIOB->IDR & GPIO_IDR_7){
 
@@ -512,12 +530,63 @@ int direction(){
 	return a[i];
 }
 
+/*
+bool negatives(int arr[]){
+	for(int i=0;i<3;i++){
+
+		if(arr[i]<0){
+			return true;
+		}
+
+	}
+	return false;
+
+}
+bool match(int arr1[],int arr2[]){
+	int c=0;
+	for(int i=0;i<3;i++){
+
+		if(arr1[i]==arr2[i]){
+			c++;
+		}
+
+	}
+	if(c==3){
+
+		return true;
+	}
+	return false;
+}
+
 void optimiser(){
+	int n = totalpoints-1;
+	int temp[3]={-1,-1,-1};
+
+	for(int i=0;i<totalturns;i+=3){
+
+
+		for(int j=i;j<j+3;j++){
+			temp[n]=map[j];
+			n++;
+
+		}
+
+		if(matches(temp,case1)){
+
+
+
+
+		}
+		temp[0]=-1;
+		temp[1]=-1;
+		temp[2]=-1;
+	}
+
 
 
 
 }
-
+*/
 //-----------------------------------------------------------------------------------------------------------
 
 // Main function
@@ -550,11 +619,12 @@ void main(void) {
 
     	else if (goPressed==1 && detected==0 && deadEnd==0){
 
-    		detectLR();
+
     		//detectDeadEnd();
     		followLine();
     		setDutyCycle();
     		setStatusLED();
+    		detectLR();
     	}
 
     	/*else if (goPressed==1&&detected==1){
@@ -569,6 +639,8 @@ void main(void) {
 
 
 }
+
+
 
 
 
