@@ -1,7 +1,7 @@
 //********************************************************************
-//*             EEE3099S Line Follower Tester Code                   *
+//*             EEE3099S Maze Robot Final     Code                   *
 //*==================================================================*
-//* WRITTEN BY: Tonderai Said and Zayd Osman     	                 *
+//* WRITTEN BY: Tonderai Saidi and Zayd Osman     	                 *
 //* DATE CREATED: 19 September 2019                                  *
 //* MODIFIED:                                                        *
 //*==================================================================*
@@ -28,21 +28,26 @@
 #define rightTurnDelay 10000000
 #define uTurnDelay 	   10000000
 #define circleDelay 1000000
-#define forwardDelay 250000
+#define forwardDelay 780000
 
 
 //global variables
 
     uint16_t leftDuty;
     uint16_t rightDuty;
-    uint16_t MAX_DUTY = 70;
-    uint16_t STEP_RIGHT_UP_1 = 70;
-    uint16_t STEP_LEFT_UP_1 = 98;
-    uint16_t STEP_RIGHT_DOWN_1 = 55;
-    uint16_t STEP_LEFT_DOWN_1 = 55;
+    //uint16_t MAX_DUTY = 70;
+    uint16_t MAX_DUTY_L = 75;
+    uint16_t MAX_DUTY_R = 70;
+
+    uint16_t STEP_RIGHT_UP_1 = 80;
+    uint16_t STEP_LEFT_UP_1 = 90;
+    uint16_t STEP_RIGHT_DOWN_1 =50 ;
+    uint16_t STEP_LEFT_DOWN_1 = 50;
+
     int goPressed=0;
     int detected=0;
     int deadEnd=0;
+    int deadEndDone=0;
     int circle=0;
     int index0 = 0;
     int turns=0;
@@ -50,6 +55,7 @@
     int totalturns=0;
     int map[30];
     int optimisedMap[30];
+    int flag;
 
     //optimisation cases
     int case1[]={3,4,1};
@@ -199,54 +205,29 @@ void setDirection() {
 }
 
 /*void init_NVIC() {
-
 	//Enable IRQs
 	NVIC_EnableIRQ(EXTI4_15_IRQn);
-
 }
-
 void init_EXTI() {
-
 	//Enable clock
 	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGCOMPEN;
-
 	//Set EXTIs for all inputs
 	SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI5_PB; 	//wide left sensor
 	SYSCFG->EXTICR[1] |= SYSCFG_EXTICR2_EXTI6_PB; 	//wide right sensor
-
-
-
 	//Set falling edge triggers
 	EXTI->FTSR |= EXTI_FTSR_TR5;
 	EXTI->FTSR |= EXTI_FTSR_TR6;
-
-
-
 	//Set rising edge triggers
 	EXTI->RTSR |= EXTI_RTSR_TR5;
 	EXTI->RTSR |= EXTI_RTSR_TR6;
-
-
-
-
 	//Note: Other interrupts will only be unmasked once the Go Button has been pressed
-
 }
-
-
 void EXTI4_15_IRQHandler() {
-
 	//This IRQ handler deals with all sensor triggers
-
 	//Clear the interrupt event
 	EXTI->PR |= EXTI_PR_PR0;
-
 	stop();
-
-
-
 }
-
 */
 //Maze Mapping Functions--------------------------------------------------------------------------------------
 
@@ -264,8 +245,8 @@ void followLine() {
 		rightDuty = STEP_RIGHT_DOWN_1;
 	} else {
 		//both sensors on
-		leftDuty = MAX_DUTY;
-		rightDuty = MAX_DUTY;
+		leftDuty = MAX_DUTY_L;
+		rightDuty = MAX_DUTY_R;
 	}
 
 
@@ -274,13 +255,13 @@ void followLine() {
 
 void setStatusLED() {
 
-	if(GPIOB->IDR & GPIO_IDR_3){
+	if(GPIOB->IDR & GPIO_IDR_7){
 
 		GPIOB->ODR |= GPIO_ODR_11;
 
 	}
 
-	else if(!(GPIOB->IDR & GPIO_IDR_3)){
+	else if(!(GPIOB->IDR & GPIO_IDR_7)){
 
 		GPIOB->ODR &=~GPIO_ODR_11;
 	}
@@ -316,14 +297,21 @@ void detectLR(){
 			stop();
 			detected=1;
 			nextDirection=direction();
-			for (int delay = 0; delay <Delay; delay++);
-		}
+			for (int delay = 0; delay <250000; delay++);
 
-	rightDuty=60;
-	leftDuty=68;
-	setDutyCycle();
-	for (int delay = 0; delay <forwardDelay; delay++);
-	stop();
+			rightDuty=52;
+			leftDuty=64;
+			setDutyCycle();
+			for (int delay = 0; delay <forwardDelay; delay++);
+			stop();
+
+	}
+	else
+	{
+		//DONOTHING
+	}
+
+
 	//detectCircle();
 	//changeDirection();
 
@@ -364,11 +352,12 @@ void changeDirection(){
 
 void detectDeadEnd(){
 
-	if (!(GPIOB->IDR & GPIO_IDR_5) && !(GPIOB->IDR & GPIO_IDR_6) && !(GPIOB->IDR & GPIO_IDR_7)) {
+	if (!(GPIOB->IDR & GPIO_IDR_5) && !(GPIOB->IDR & GPIO_IDR_6) && !(GPIOB->IDR & GPIO_IDR_7) &&(detected==0)) {
 
 				stop();
 				deadEnd=1;
-				uTurn();
+
+
 
 
 			}
@@ -398,60 +387,75 @@ void turnLeft(){
 	setDutyCycle();
 
 
-	if(GPIOB->IDR & GPIO_IDR_7){
-
-		stop();
-		GPIOB->ODR &= 0;
-		setDirection();
+	while(!(GPIOB->IDR & GPIO_IDR_5)){
 
 	}
 
 
+	while(!(GPIOB->IDR & GPIO_IDR_7)){
+
+	}
+	detected=0;
+    stop();
+	GPIOB->ODR &= 0;
+	setDirection();
 
 }
 
 void turnRight(){
 
-
 	GPIOB->ODR &= 0;
-	GPIOB->ODR |= GPIO_ODR_14;
 	GPIOB->ODR |= GPIO_ODR_13;
+	GPIOB->ODR |= GPIO_ODR_14;
 
-	leftDuty=50;
+	leftDuty=55;
 	rightDuty=50;
 	setDutyCycle();
 
 
 
-	if(GPIOB->IDR & GPIO_IDR_7){
 
-		stop();
-		GPIOB->ODR &= 0;
-		setDirection();
+	while(!(GPIOB->IDR & GPIO_IDR_6)){
 
 	}
+
+
+	while(!(GPIOB->IDR & GPIO_IDR_7)){
+
+	}
+	detected=0;
+	stop();
+	GPIOB->ODR &= 0;
+	setDirection();
+
 
 }
 
 void uTurn(){
 
 	GPIOB->ODR &= 0;
-	GPIOB->ODR |= GPIO_ODR_13;
-	GPIOB->ODR |= GPIO_ODR_14;
+	GPIOB->ODR |= GPIO_ODR_15;
+	GPIOB->ODR |= GPIO_ODR_12;
 
-	leftDuty=MAX_DUTY;
-	rightDuty=MAX_DUTY;
-
+	leftDuty=50;
+	rightDuty=50;
 	setDutyCycle();
 
+	while(!(GPIOB->IDR & GPIO_IDR_5)){
 
-	for (int delay = 0; delay <uTurnDelay; delay++);
+	}
 
+
+	while(!(GPIOB->IDR & GPIO_IDR_7)){
+
+	}
 	stop();
+	deadEnd=0;
 
 	GPIOB->ODR &= 0;
-
 	setDirection();
+
+
 
 
 }
@@ -533,58 +537,38 @@ int direction(){
 /*
 bool negatives(int arr[]){
 	for(int i=0;i<3;i++){
-
 		if(arr[i]<0){
 			return true;
 		}
-
 	}
 	return false;
-
 }
 bool match(int arr1[],int arr2[]){
 	int c=0;
 	for(int i=0;i<3;i++){
-
 		if(arr1[i]==arr2[i]){
 			c++;
 		}
-
 	}
 	if(c==3){
-
 		return true;
 	}
 	return false;
 }
-
 void optimiser(){
 	int n = totalpoints-1;
 	int temp[3]={-1,-1,-1};
-
 	for(int i=0;i<totalturns;i+=3){
-
-
 		for(int j=i;j<j+3;j++){
 			temp[n]=map[j];
 			n++;
-
 		}
-
 		if(matches(temp,case1)){
-
-
-
-
 		}
 		temp[0]=-1;
 		temp[1]=-1;
 		temp[2]=-1;
 	}
-
-
-
-
 }
 */
 //-----------------------------------------------------------------------------------------------------------
@@ -604,10 +588,11 @@ void main(void) {
 	EXTI->IMR |= EXTI_IMR_MR5;	//Line sensor - Left
     EXTI->IMR |= EXTI_IMR_MR6;	//Line sensor - Center
     EXTI->IMR |= EXTI_IMR_MR7;	//Line sensor - Right
-
 */
     //Loop forever
     while(1){
+
+    	setStatusLED();
 
     	if((GPIOA->IDR & GPIO_IDR_3)==0){
 
@@ -620,18 +605,27 @@ void main(void) {
     	else if (goPressed==1 && detected==0 && deadEnd==0){
 
 
-    		//detectDeadEnd();
+
     		followLine();
     		setDutyCycle();
-    		setStatusLED();
     		detectLR();
+    		detectDeadEnd();
+
     	}
 
-    	/*else if (goPressed==1&&detected==1){
+    	else if (goPressed==1&&detected==1&&deadEnd==0){
+    		//turnLeft();
+    		turnRight();
+    	}
 
-    		turnLeft();
+    	else if(goPressed==1&&deadEnd==1&&detected==0){
 
-    	}*/
+    		uTurn();
+
+
+    	}
+
+
 
 
     }
