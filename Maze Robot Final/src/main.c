@@ -1,7 +1,7 @@
 //********************************************************************
-//*             EEE3099S Maze Robot Final     Code                   *
+//*             EEE3099S Line Follower Tester Code                   *
 //*==================================================================*
-//* WRITTEN BY: Tonderai Saidi and Zayd Osman     	                 *
+//* WRITTEN BY: Tonderai Said and Zayd Osman     	                 *
 //* DATE CREATED: 19 September 2019                                  *
 //* MODIFIED:                                                        *
 //*==================================================================*
@@ -28,7 +28,7 @@
 #define rightTurnDelay 10000000
 #define uTurnDelay 	   10000000
 #define circleDelay 1000000
-#define forwardDelay 780000
+#define forwardDelay 700000
 
 
 //global variables
@@ -56,7 +56,7 @@
     int map[30];
     int optimisedMap[30];
     int flag;
-
+    int uturnflag=0;
     //optimisation cases
     int case1[]={3,4,1};
     int case2[]={3,4,2};
@@ -266,13 +266,13 @@ void setStatusLED() {
 		GPIOB->ODR &=~GPIO_ODR_11;
 	}
 
-	if(GPIOB->IDR & GPIO_IDR_4){
+	if(uturnflag==1){
 
 		GPIOB->ODR |= GPIO_ODR_2;
 
 	}
 
-	else if(!(GPIOB->IDR & GPIO_IDR_4)){
+	else if(uturnflag==0){
 
 		GPIOB->ODR &=~GPIO_ODR_2;
 	}
@@ -295,8 +295,8 @@ void detectLR(){
 
 
 			stop();
-			detected=1;
 			nextDirection=direction();
+
 			for (int delay = 0; delay <250000; delay++);
 
 			rightDuty=52;
@@ -305,15 +305,19 @@ void detectLR(){
 			for (int delay = 0; delay <forwardDelay; delay++);
 			stop();
 
-	}
-	else
-	{
-		//DONOTHING
-	}
+			if ((GPIOB->IDR & GPIO_IDR_5) || (GPIOB->IDR & GPIO_IDR_6)){
+
+				circle=1;
 
 
-	//detectCircle();
-	//changeDirection();
+			}
+			else{
+				changeDirection();
+
+			}
+
+	}
+
 
 
 }
@@ -323,7 +327,6 @@ void changeDirection(){
 	if(circle==1){
 
 			stop();
-			setStatusLED();
 
 		}
 
@@ -347,33 +350,31 @@ void changeDirection(){
 
 		}
 
+		else if(nextDirection==4){
+
+			uTurn();
+			uturnflag=0;
+
+		}
+
 
 }
 
 void detectDeadEnd(){
 
-	if (!(GPIOB->IDR & GPIO_IDR_5) && !(GPIOB->IDR & GPIO_IDR_6) && !(GPIOB->IDR & GPIO_IDR_7) &&(detected==0)) {
+	if (!(GPIOB->IDR & GPIO_IDR_5) && !(GPIOB->IDR & GPIO_IDR_6) && !(GPIOB->IDR & GPIO_IDR_7)) {
 
 				stop();
 				deadEnd=1;
 
-
+				nextDirection=4;
+				changeDirection();
 
 
 			}
 
 }
 
-void detectCircle(){
-
-
-	if((GPIOB->IDR & GPIO_IDR_5) && (GPIOB->IDR & GPIO_IDR_6) && (GPIOB->IDR & GPIO_IDR_7)){
-
-		circle=1;
-
-	}
-
-}
 
 void turnLeft(){
 
@@ -382,8 +383,8 @@ void turnLeft(){
 	GPIOB->ODR |= GPIO_ODR_15;
 	GPIOB->ODR |= GPIO_ODR_12;
 
-	leftDuty=50;
-	rightDuty=50;
+	leftDuty=60;
+	rightDuty=60;
 	setDutyCycle();
 
 
@@ -396,6 +397,7 @@ void turnLeft(){
 
 	}
 	detected=0;
+	for (int delay = 0; delay <50000; delay++);
     stop();
 	GPIOB->ODR &= 0;
 	setDirection();
@@ -408,8 +410,8 @@ void turnRight(){
 	GPIOB->ODR |= GPIO_ODR_13;
 	GPIOB->ODR |= GPIO_ODR_14;
 
-	leftDuty=55;
-	rightDuty=50;
+	leftDuty=60;
+	rightDuty=60;
 	setDutyCycle();
 
 
@@ -424,6 +426,7 @@ void turnRight(){
 
 	}
 	detected=0;
+	for (int delay = 0; delay <50000; delay++);
 	stop();
 	GPIOB->ODR &= 0;
 	setDirection();
@@ -433,6 +436,8 @@ void turnRight(){
 
 void uTurn(){
 
+	uturnflag=1;
+	setStatusLED();
 	GPIOB->ODR &= 0;
 	GPIOB->ODR |= GPIO_ODR_15;
 	GPIOB->ODR |= GPIO_ODR_12;
@@ -449,10 +454,12 @@ void uTurn(){
 	while(!(GPIOB->IDR & GPIO_IDR_7)){
 
 	}
+
 	stop();
 	deadEnd=0;
 
 	GPIOB->ODR &= 0;
+
 	setDirection();
 
 
@@ -486,52 +493,30 @@ int direction(){
 	int i=-1;
 	int rev=0;
 	int c=0;
-	while(i==-1 && rev==0){
-	switch(index0){
 
-		 case 0:
-				c++;
-				  if((turns!=3) && (GPIOB->IDR & GPIO_IDR_6)){
-				//move to the right
-				i=0;
-				turns++;
-				indexShift();
-				break;
-				}
-				  indexShift();
-				break;
+	if((turns!=3) && (GPIOB->IDR & GPIO_IDR_6)){
+		//move to the right
+		i=0;
+		turns++;
+	}
+	else if(GPIOB->IDR & GPIO_IDR_7){
+		turns=0;
 
-		case 1:
-			c++;
-			//move forward
-			turns =0;
-			if(GPIOB->IDR & GPIO_IDR_7){
+		i=1;
 
-				indexShift();
-				i=1;
-				break;
-			}
-			indexShift();
-			 break;
-		case 2:
-			c++;
-			// move left
-			turns =0;
-			if(GPIOB->IDR& GPIO_IDR_5){
-				//pwm
-				 indexShift();
-				i=2;
-			}
-			 indexShift();
-			break;
+	}
+	else if(GPIOB->IDR& GPIO_IDR_5){
+		//pwm
+		turns=0;
 
-				}
-
+		i=2;
 	}
 
 
 
-	return a[i];
+	//return a[i];
+	return 1;
+
 }
 
 /*
@@ -580,15 +565,7 @@ void main(void) {
 	init_Ports();
 	init_Timer();
 	setDirection();
-	//init_NVIC();
-	//init_EXTI();
 
-	/*
-	//unmask interrupt bits for sensors
-	EXTI->IMR |= EXTI_IMR_MR5;	//Line sensor - Left
-    EXTI->IMR |= EXTI_IMR_MR6;	//Line sensor - Center
-    EXTI->IMR |= EXTI_IMR_MR7;	//Line sensor - Right
-*/
     //Loop forever
     while(1){
 
@@ -600,11 +577,11 @@ void main(void) {
     		//delay for debounce
     		for (int delay = 0; delay <Delay; delay++);
 
+
+
     	}
 
-    	else if (goPressed==1 && detected==0 && deadEnd==0){
-
-
+    	else if (goPressed==1){
 
     		followLine();
     		setDutyCycle();
@@ -613,18 +590,11 @@ void main(void) {
 
     	}
 
-    	else if (goPressed==1&&detected==1&&deadEnd==0){
-    		//turnLeft();
-    		turnRight();
-    	}
+    	if (circle==1){
 
-    	else if(goPressed==1&&deadEnd==1&&detected==0){
-
-    		uTurn();
-
+    		stop();
 
     	}
-
 
 
 
@@ -633,8 +603,4 @@ void main(void) {
 
 
 }
-
-
-
-
 
