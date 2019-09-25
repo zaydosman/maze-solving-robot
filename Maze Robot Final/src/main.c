@@ -28,7 +28,7 @@
 #define rightTurnDelay 10000000
 #define uTurnDelay 	   10000000
 #define circleDelay 1000000
-#define forwardDelay 700000
+#define forwardDelay 500000
 
 
 //global variables
@@ -293,6 +293,7 @@ void detectLR(){
 
 	if ((GPIOB->IDR & GPIO_IDR_5) || (GPIOB->IDR & GPIO_IDR_6)) {
 
+			for (int delay = 0; delay <50000; delay++);
 
 			stop();
 			nextDirection=direction();
@@ -397,7 +398,7 @@ void turnLeft(){
 
 	}
 	detected=0;
-	for (int delay = 0; delay <50000; delay++);
+	//for (int delay = 0; delay <50000; delay++);
     stop();
 	GPIOB->ODR &= 0;
 	setDirection();
@@ -426,7 +427,7 @@ void turnRight(){
 
 	}
 	detected=0;
-	for (int delay = 0; delay <50000; delay++);
+	//for (int delay = 0; delay <50000; delay++);
 	stop();
 	GPIOB->ODR &= 0;
 	setDirection();
@@ -494,7 +495,7 @@ int direction(){
 	int rev=0;
 	int c=0;
 
-	if((turns!=3) && (GPIOB->IDR & GPIO_IDR_6)){
+	if((GPIOB->IDR & GPIO_IDR_6)){
 		//move to the right
 		i=0;
 		turns++;
@@ -514,8 +515,10 @@ int direction(){
 
 
 
-	//return a[i];
-	return 1;
+
+
+	return a[i];
+	//return 1;
 
 }
 
@@ -586,7 +589,7 @@ void main(void) {
     		followLine();
     		setDutyCycle();
     		detectLR();
-    		detectDeadEnd();
+    		//detectDeadEnd();
 
     	}
 
